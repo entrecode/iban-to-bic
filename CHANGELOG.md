@@ -1,3 +1,7 @@
+# 1.4.0 (2024-09-23)
+
+- updated datasets
+
 # 1.3.0 (2023-01-31)
 
 - added datasets for Spain and France
