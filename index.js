@@ -1,5 +1,6 @@
 const ibantools = require('ibantools');
 const datasets = require('./datasets');
+const datasetsExtended = require('./datasets-extended');
 const generateFiles = require('./src/generate');
 
 module.exports = {
@@ -27,8 +28,35 @@ module.exports = {
 
     return datasets.getData(country, bankCode);
   },
+  ibanToBankData(iban) {
+    iban = ibantools.electronicFormatIBAN(iban);
+    if (!ibantools.isValidIBAN(iban)) return;
+
+    const country = iban.slice(0, 2);
+    if (!datasetsExtended.hasCountry(country)) return;
+
+    let bankCode;
+    if (country === 'AT') bankCode = iban.substr(4, 5);
+    else if (country === 'BE') bankCode = iban.substr(4, 3);
+    else if (country === 'DE') bankCode = iban.substr(4, 8);
+    else if (country === 'ES') bankCode = iban.substr(4, 4);
+    else if (country === 'FR') bankCode = iban.substr(4, 5);
+    else if (country === 'LU') bankCode = iban.substr(4, 3);
+    else if (country === 'NL') bankCode = iban.substr(4, 4);
+    if (!bankCode) return;
+
+    return datasetsExtended.getData(country, bankCode);
+  },
+  async activateExtendedDatasets() {
+    if (!datasetsExtended.isDataLoaded()) {
+      await datasetsExtended.reload();
+    }
+  },
   async generate() {
     await generateFiles();
     await datasets.reload();
+    if (datasetsExtended.isDataLoaded()) {
+      await datasetsExtended.reload();
+    }
   }
 };

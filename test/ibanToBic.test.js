@@ -1,5 +1,5 @@
 const ibantools = require('ibantools');
-const { ibanToBic } = require('..');
+const { ibanToBic, ibanToBankData, activateExtendedDatasets } = require('..');
 
 test('determines the correct BIC for an Austrian IBAN', () => {
   expect(ibanToBic('AT781400039828399259')).toBe('BAWAATWWXXX');
@@ -38,4 +38,30 @@ test('returns undefined for an unknown bank code in a valid IBAN', () => {
 
 test('returns undefined for an invalid IBAN', () => {
   expect(ibanToBic('not an IBAN')).toBe(undefined);
+});
+
+test('throws when using extended dataset without activating it first', () => {
+  expect(() => ibanToBankData('AT781400039828399259')).toThrow('Extended dataset is not loaded, please call `await activateExtendedDatasets()` first');
+});
+
+test('returns extended dataset', async () => {
+  await activateExtendedDatasets();
+  const response = await ibanToBankData('AT781400039828399259');
+  expect(response).toEqual({
+    code: '14000',
+    bic: 'BAWAATWWXXX',
+    name: 'BAWAG P.S.K. Bank für Arbeit und Wirtschaft und Österreichische Postsparkasse Aktiengesellschaft',
+    addresses: [{
+      type: 'home',
+      streetAndNumber: 'Wiedner Gürtel 11',
+      postalCode: '1100',
+      city: 'Wien'
+    }],
+    contacts: {
+      phone: '059905',
+      fax: '059905/22840',
+      email: 'office@bawaggroup.com',
+      url: 'https://www.bawag.at/'
+    }
+  });
 });

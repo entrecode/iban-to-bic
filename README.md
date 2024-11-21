@@ -15,6 +15,21 @@ const bic = ibanToBic('DE51500105179975341634');
 
 `ibanToBic` returns undefined if the IBAN is invalid (checked internally using [ibantools](https://github.com/Simplify/ibantools)) or if no corresponding BIC was found.
 
+### use extended dataset
+
+You can optionally retrieve the bank name. To use the extended dataset, you have to activate it first. It is not hold in memory by default to save memory space. 
+
+```javascript
+const { activateExtendedDatasets, ibanToBankData } = require('iban-to-bic');
+
+await ibanToBic.activateExtendedDatasets();
+
+ibanToBic.ibanToBankData('DE51500105179975341634');
+// {"code":"50010517","name":"ING-DiBa","shortName":"ING-DiBa Frankfurt am Main","bic":"INGDDEFFXXX"}
+// note that the returned structure is different for each country.
+
+```
+
 ## Usage in the browser
 
 iban-to-bic is really simple to use inside a browser. You can either pull the package from npm and build it with your favorite packaging tool or you can use it from a CDN like this:
