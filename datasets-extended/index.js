@@ -26,13 +26,13 @@ module.exports =
     return dataset[country][bankCode];
   },
   reload: async () => {
-    dataset.AT = JSON.parse(await readFile(`./datasets-extended/at.json`, 'utf8'));
-    dataset.BE = JSON.parse(await readFile(`./datasets-extended/be.json`, 'utf8'));
-    dataset.DE = JSON.parse(await readFile(`./datasets-extended/de.json`, 'utf8'));
-    dataset.ES = JSON.parse(await readFile(`./datasets-extended/es.json`, 'utf8'));
-    dataset.FR = JSON.parse(await readFile(`./datasets-extended/fr.json`, 'utf8'));
-    dataset.LU = JSON.parse(await readFile(`./datasets-extended/lu.json`, 'utf8'));
-    dataset.NL = JSON.parse(await readFile(`./datasets-extended/nl.json`, 'utf8'));
+    dataset.AT = JSON.parse(await readFile(path.resolve(__dirname, './at.json'), 'utf8'));
+    dataset.BE = JSON.parse(await readFile(path.resolve(__dirname, './be.json'), 'utf8'));
+    dataset.DE = JSON.parse(await readFile(path.resolve(__dirname, './de.json'), 'utf8'));
+    dataset.ES = JSON.parse(await readFile(path.resolve(__dirname, './es.json'), 'utf8'));
+    dataset.FR = JSON.parse(await readFile(path.resolve(__dirname, './fr.json'), 'utf8'));
+    dataset.LU = JSON.parse(await readFile(path.resolve(__dirname, './lu.json'), 'utf8'));
+    dataset.NL = JSON.parse(await readFile(path.resolve(__dirname, './nl.json'), 'utf8'));
     dataIsLoaded = true;
   },
   isDataLoaded() {
