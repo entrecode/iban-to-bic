@@ -14,8 +14,9 @@ module.exports = async () => {
   );
 
   // filter by allowed sectors
-  const allowedSectors = ['Raiffeisen', 'Aktienbanken', '§ 9 Institute', 'Sparkassen', 'Volksbanken'];
-  banks = banks.filter(d => allowedSectors.includes(d.Sektor));
+  // all sectors: ['Raiffeisen', 'Aktienbanken', 'Sparkassen', '§ 9 Institute', 'Landeshypothekenbanken', 'Volksbanken', '', 'OeNB', 'Sonderbanken', 'Bausparkassen']
+  //const allowedSectors = ['Raiffeisen', 'Aktienbanken', '§ 9 Institute', 'Sparkassen', 'Volksbanken'];
+  //banks = banks.filter(d => allowedSectors.includes(d.Sektor));
 
   // make sure that BLZ is unique
   assert.strictEqual(banks.length, new Set(banks.map(b => b.Bankleitzahl)).size);
