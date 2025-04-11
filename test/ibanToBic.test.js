@@ -1,5 +1,5 @@
 const ibantools = require('ibantools');
-const { ibanToBic } = require('..');
+const { ibanToBic, generate } = require('..');
 
 test('determines the correct BIC for an Austrian IBAN', () => {
   expect(ibanToBic('AT781400039828399259')).toBe('BAWAATWWXXX');
@@ -14,7 +14,7 @@ test('determines the correct BIC for a German IBAN', () => {
 });
 
 test('determines the correct BIC for a Luxembourgish IBAN', () => {
-  expect(ibanToBic('LU280102886838719723')).toBe('FOTNLULL');
+  expect(ibanToBic('LU280019400644750000')).toBe('BCEELULL');
 });
 
 test('determines the correct BIC for a Dutch IBAN', () => {
@@ -22,7 +22,7 @@ test('determines the correct BIC for a Dutch IBAN', () => {
 });
 
 test('determines the correct BIC for a Spanish IBAN', () => {
-  expect(ibanToBic('ES9121000418450200051332')).toBe('CAIXESBB');
+  expect(ibanToBic('ES9121000418450200051332')).toBe('CAIXESBBXXX');
 });
 
 test('determines the correct BIC for a French IBAN', () => {
@@ -38,4 +38,8 @@ test('returns undefined for an unknown bank code in a valid IBAN', () => {
 
 test('returns undefined for an invalid IBAN', () => {
   expect(ibanToBic('not an IBAN')).toBe(undefined);
+});
+
+test('generate new Data', () => {
+  return generate();
 });

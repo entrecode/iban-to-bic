@@ -1,3 +1,9 @@
+# 1.5.0 (2025-04-11)
+
+- removed broken browser support
+- updated datasets
+- fixes tls fingerprinting for www.ecb.europa.eu
+
 # 1.4.0 (2024-09-23)
 
 - updated datasets

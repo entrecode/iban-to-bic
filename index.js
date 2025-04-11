@@ -1,6 +1,6 @@
 const ibantools = require('ibantools');
 const datasets = require('./datasets');
-const generateFiles = require('./src/generate');
+const generateFiles = require('./lib/generate');
 
 module.exports = {
   ibanIsValid(iban) {
@@ -30,5 +30,5 @@ module.exports = {
   async generate() {
     await generateFiles();
     await datasets.reload();
-  }
+  },
 };
