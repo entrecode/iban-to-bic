@@ -1,15 +1,15 @@
-const ibantools = require('ibantools');
+const { electronicFormatIBAN, isValidIBAN } = require('ibantools');
 const datasets = require('./datasets');
 const generateFiles = require('./lib/generate');
 
 module.exports = {
   ibanIsValid(iban) {
-    iban = ibantools.electronicFormatIBAN(iban);
-    return ibantools.isValidIBAN(iban);
+    iban = electronicFormatIBAN(iban);
+    return isValidIBAN(iban);
   },
   ibanToBic(iban) {
-    iban = ibantools.electronicFormatIBAN(iban);
-    if (!ibantools.isValidIBAN(iban)) return;
+    iban = electronicFormatIBAN(iban);
+    if (!isValidIBAN(iban)) return;
 
     const country = iban.slice(0, 2);
     if (!datasets.hasCountry(country)) return;

@@ -1,30 +1,29 @@
 const { readFile } = require('node:fs/promises');
 const { resolve } = require('node:path');
 
-const dataset = {
-  AT: require('./at.json'),
-  BE: require('./be.json'),
-  DE: require('./de.json'),
-  ES: require('./es.json'),
-  FR: require('./fr.json'),
-  LU: require('./lu.json'),
-  NL: require('./nl.json'),
-};
+const countries = ['AT', 'BE', 'DE', 'ES', 'FR', 'LU', 'NL'];
+
+const dataset = {};
+
+countries.forEach(country => {
+  try {
+    dataset[country] = require(`./${country.toLowerCase()}.json`);
+  } catch (error) {
+    console.warn(`Failed to load dataset for ${country}:`, error);
+    dataset[country] = undefined;
+  }
+});
 
 module.exports = {
-  hasCountry(country) {
-    return dataset[country] !== undefined;
-  },
-  getData(country, bankCode) {
-    return dataset[country][bankCode];
-  },
-  reload: async () => {
-    dataset.AT = JSON.parse(await readFile(resolve(__dirname, './at.json'), 'utf8'));
-    dataset.BE = JSON.parse(await readFile(resolve(__dirname, './be.json'), 'utf8'));
-    dataset.DE = JSON.parse(await readFile(resolve(__dirname, './de.json'), 'utf8'));
-    dataset.ES = JSON.parse(await readFile(resolve(__dirname, './es.json'), 'utf8'));
-    dataset.FR = JSON.parse(await readFile(resolve(__dirname, './fr.json'), 'utf8'));
-    dataset.LU = JSON.parse(await readFile(resolve(__dirname, './lu.json'), 'utf8'));
-    dataset.NL = JSON.parse(await readFile(resolve(__dirname, './nl.json'), 'utf8'));
-  },
+  hasCountry: country => dataset[country] !== undefined,
+  getData: (country, bankCode) => dataset[country][bankCode],
+  reload: () =>
+    Array.fromAsync(countries, async country => {
+      try {
+        dataset[country] = JSON.parse(await readFile(resolve(__dirname, `./${country.toLowerCase()}.json`), 'utf8'));
+      } catch (error) {
+        console.warn(`Failed to reload dataset for ${country}:`, error);
+        dataset[country] = undefined;
+      }
+    }),
 };

@@ -17,7 +17,7 @@
     "swift",
     "banking"
   ],
-  "author": "sigalor",
+  "author": "entrecode GmbH",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/entrecode/iban-to-bic/issues"
@@ -25,12 +25,12 @@
   "homepage": "https://github.com/entrecode/iban-to-bic#readme",
   "dependencies": {
     "ibantools": "^4.5.1",
-    "iconv-lite": "^0.6.3",
-    "jsdom": "^26.0.0",
+    "iconv-lite": "^0.7.2",
+    "jsdom": "^26.1.0",
     "neat-csv": "^6.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.2.0"
   }
 }
