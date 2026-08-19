@@ -3,21 +3,21 @@
 Where the bank-code-to-BIC mapping for each country comes from, and what is known about the
 countries that are not supported yet. Verified 2026-08-19 unless noted otherwise.
 
-Everything below was checked with actual requests. Where a claim is *not* verified, it says so.
+Everything below was checked with actual requests. Where a claim is _not_ verified, it says so.
 
 ## Supported
 
-| Country | Bank code in IBAN | Source | Format |
-| --- | --- | --- | --- |
-| AT | pos. 5–9 (5) | OeNB | XLSX |
-| BE | pos. 5–7 (3) | NBB | XLSX |
-| CH | pos. 5–9 (5) | SIX Bankmaster REST API | JSON |
-| CZ | pos. 5–8 (4) | ČNB, Číselník kódů platebního styku (ČKPS) | CSV |
-| DE | pos. 5–12 (8) | Bundesbank | XLSX |
-| ES | RIAD code | ECB, monthly list of financial institutions | TSV |
-| FR | pos. 5–9 (5) | ECB, monthly list of financial institutions | TSV |
-| LU | pos. 5–7 (3) | ABBL | XLSX |
-| NL | pos. 5–8 (4) | Betaalvereniging Nederland | XLSX |
+| Country | Bank code in IBAN | Source                                      | Format |
+| ------- | ----------------- | ------------------------------------------- | ------ |
+| AT      | pos. 5–9 (5)      | OeNB                                        | XLSX   |
+| BE      | pos. 5–7 (3)      | NBB                                         | XLSX   |
+| CH      | pos. 5–9 (5)      | SIX Bankmaster REST API                     | JSON   |
+| CZ      | pos. 5–8 (4)      | ČNB, Číselník kódů platebního styku (ČKPS)  | CSV    |
+| DE      | pos. 5–12 (8)     | Bundesbank                                  | XLSX   |
+| ES      | RIAD code         | ECB, monthly list of financial institutions | TSV    |
+| FR      | pos. 5–9 (5)      | ECB, monthly list of financial institutions | TSV    |
+| LU      | pos. 5–7 (3)      | ABBL                                        | XLSX   |
+| NL      | pos. 5–8 (4)      | Betaalvereniging Nederland                  | XLSX   |
 
 ### CH — SIX Bankmaster
 
@@ -58,7 +58,7 @@ spellings). 47 rows, of which 35 carry a BIC.
 Header: `Kód platebního styku;Poskytovatel platebních služeb;BIC kód (SWIFT);Systém CERTIS`
 
 The `Systém CERTIS` column (`A` = direct participant of the Czech clearing system) is kept as
-`certis` in `datasets-extended/cz.json`. Note there is a *versioned* mirror of the same file
+`certis` in `datasets-extended/cz.json`. Note there is a _versioned_ mirror of the same file
 (`kody_bank_CR_253.csv`) — do not use it, it goes stale.
 
 ## Researched, not implemented
@@ -76,7 +76,7 @@ Two obstacles:
 - The filename is **dated** (`LT-20251118-en.pdf`) and the index page that lists the current one
   (`https://www.lb.lt/en/iban-and-financial-institution-codes`) is behind a Cloudflare
   challenge — HTTP 403 for curl and fetch, including with a browser user agent. The
-  `/uploads/documents/files/` path itself is *not* challenged and serves the PDF with HTTP 200.
+  `/uploads/documents/files/` path itself is _not_ challenged and serves the PDF with HTTP 200.
   So the file is reachable but the current filename cannot be discovered automatically.
 
 LT matters more than its size suggests: Revolut issues Lithuanian IBANs, so this is not an
@@ -110,7 +110,7 @@ Two shortcuts look attractive and are both dead ends. Documented so nobody spend
 
 `lib/fr-es.js` uses the ECB monthly list of financial institutions, which contains a `BIC` and a
 `RIAD_CODE` for institutions across the whole EU. It is tempting to derive every remaining
-country from it, but the `RIAD_CODE` only *happens* to equal the national bank code for ES and
+country from it, but the `RIAD_CODE` only _happens_ to equal the national bank code for ES and
 FR. For LT it is the company registration number: Revolut Bank UAB is `LT304580906`, not the
 IBAN bank code `32500`.
 
@@ -143,20 +143,15 @@ The conclusion is that a country-code comparison is usable as a soft signal at m
 rejection criterion. A genuine confirmation of a BIC against an IBAN requires the country's bank
 list — which is the whole point of this package.
 
-## Known issue: the NL generator is broken
+## NL — a source that keeps moving
 
-Unrelated to CH/CZ, but it breaks `generate()` for everyone, so it is worth knowing about.
+Worth knowing before touching `lib/nl.js`. The Betaalvereniging XLSX has changed shape twice
+without notice: the worksheet was renamed from `BIC-lijst` to `BIC-lijst | BIC-list`, the header
+row moved from row 4 to row 2, and the third column was renamed from `Naam betaaldienstverlener`
+to `Betaaldienstverlener / Payment Service Provider`. Each time the generator threw
+`Cannot read properties of undefined (reading 'A1')`, which reads like a download problem but is
+not one — the file downloads fine.
 
-`lib/nl.js` requests the worksheet named `BIC-lijst` from the Betaalvereniging XLSX. The file
-downloads fine (HTTP 200, valid XLSX), but the sheet has been renamed to `BIC-lijst | BIC-list`
-and the layout shifted — the data now starts at row 3, and the `A1` string and the header row the
-generator asserts on have changed too. `xlsx` therefore returns `undefined` for the sheet and
-`nl.js` throws `Cannot read properties of undefined (reading 'A1')`.
-
-Consequences:
-
-- `npm test` fails on the `generate new Data` case.
-- `generate()` uses `Promise.all`, so it rejects. The other countries still finish and still
-  write their files, because their promises were already running — but `datasets.reload()` in
-  `index.js` runs *after* `generateFiles()` and is therefore skipped, so a running process keeps
-  serving the datasets it started with until it is restarted.
+The generator therefore resolves the worksheet by name _prefix_ and searches the first ten rows
+for a header row starting with `BIC`, `Identifier`, rather than hardcoding either. Cell values
+are trimmed because the source has trailing spaces in both names and headers.

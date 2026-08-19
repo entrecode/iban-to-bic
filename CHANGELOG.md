@@ -2,6 +2,7 @@
 
 - added datasets for Switzerland (incl. Liechtenstein-domiciled institutions) and the Czech Republic
 - added `docs/data-sources.md` documenting the source per country and research notes on unsupported countries
+- fixed the Netherlands generator, which broke when the source worksheet and its header row were renamed and moved
 
 # 1.5.0 (2025-04-11)
 
