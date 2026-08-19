@@ -1,7 +1,7 @@
 const { readFile } = require('node:fs/promises');
 const { resolve } = require('node:path');
 
-const countries = ['AT', 'BE', 'DE', 'ES', 'FR', 'LU', 'NL'];
+const countries = ['AT', 'BE', 'CH', 'CZ', 'DE', 'ES', 'FR', 'LU', 'NL'];
 
 const dataset = {};
 
