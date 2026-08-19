@@ -143,15 +143,26 @@ The conclusion is that a country-code comparison is usable as a soft signal at m
 rejection criterion. A genuine confirmation of a BIC against an IBAN requires the country's bank
 list — which is the whole point of this package.
 
-## NL — a source that keeps moving
+## Sources that keep moving
 
-Worth knowing before touching `lib/nl.js`. The Betaalvereniging XLSX has changed shape twice
-without notice: the worksheet was renamed from `BIC-lijst` to `BIC-lijst | BIC-list`, the header
-row moved from row 4 to row 2, and the third column was renamed from `Naam betaaldienstverlener`
-to `Betaaldienstverlener / Payment Service Provider`. Each time the generator threw
-`Cannot read properties of undefined (reading 'A1')`, which reads like a download problem but is
-not one — the file downloads fine.
+The spreadsheet sources rename and reshuffle things without notice, and the resulting error
+usually looks like a download problem when it is not. `findSheet` and `findHeaderRow` in
+`lib/utils.js` exist for this: they resolve the worksheet by name _prefix_ and search the first
+ten rows for the header, instead of hardcoding a sheet name and a row number. Only the leading
+header columns are checked, because trailing ones get renamed independently, and cell values are
+compared trimmed because several sources have trailing spaces.
 
-The generator therefore resolves the worksheet by name _prefix_ and searches the first ten rows
-for a header row starting with `BIC`, `Identifier`, rather than hardcoding either. Cell values
-are trimmed because the source has trailing spaces in both names and headers.
+**NL — Betaalvereniging.** Changed shape twice: the worksheet was renamed from `BIC-lijst` to
+`BIC-lijst | BIC-list`, the header row moved from row 4 to row 2, and the third column was
+renamed from `Naam betaaldienstverlener` to `Betaaldienstverlener / Payment Service Provider`.
+Both times the generator threw `Cannot read properties of undefined (reading 'A1')` while the
+file itself downloaded fine.
+
+**LU — ABBL.** The page moved from `abbl.lu/en/professionals/page/iban-and-bic-codes` (now 404)
+to `www.abbl.lu/publications/abbl-luxembourg-register-of-iban-bic-codes/`, and the third column
+was renamed from ` BIC Code` to `BICCode`. The spreadsheet link cannot be hardcoded at all: it is
+served from a different host under a tokenised, versioned path
+(`office-membernet.abbl.lu/newDocRequest/<token>/ABBL_LuxembourgRegisterofIBANBICCodes<version>.xlsx`),
+so `lib/lu.js` scrapes the publication page for the first `.xlsx` link whose filename mentions
+both `iban` and `bic`. Note the register lives on the *publications* page, not on the payments
+page that describes it — the latter only links to the former.
