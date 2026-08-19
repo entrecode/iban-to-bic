@@ -1,3 +1,8 @@
+# 1.6.0
+
+- added datasets for Switzerland (incl. Liechtenstein-domiciled institutions) and the Czech Republic
+- added `docs/data-sources.md` documenting the source per country and research notes on unsupported countries
+
 # 1.5.0 (2025-04-11)
 
 - removed broken browser support

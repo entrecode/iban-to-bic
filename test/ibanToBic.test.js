@@ -9,6 +9,18 @@ test('determines the correct BIC for a Belgian IBAN', () => {
   expect(ibanToBic('BE16897275256574')).toBe('VDSPBE91');
 });
 
+test('determines the correct BIC for a Swiss IBAN', () => {
+  expect(ibanToBic('CH2100700115201849012')).toBe('ZKBKCHZZ80A');
+});
+
+test('determines the correct BIC for a Swiss QR-IBAN', () => {
+  expect(ibanToBic('CH4330000001200008901')).toBe('POFICHBEXXX');
+});
+
+test('determines the correct BIC for a Czech IBAN', () => {
+  expect(ibanToBic('CZ6508000000192000145399')).toBe('GIBACZPX');
+});
+
 test('determines the correct BIC for a German IBAN', () => {
   expect(ibanToBic('DE51500105179975341634')).toBe('INGDDEFFXXX');
 });

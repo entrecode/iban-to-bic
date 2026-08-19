@@ -18,6 +18,8 @@ module.exports = {
     let bankCode;
     if (country === 'AT') bankCode = iban.substr(4, 5);
     else if (country === 'BE') bankCode = iban.substr(4, 3);
+    else if (country === 'CH') bankCode = iban.substr(4, 5);
+    else if (country === 'CZ') bankCode = iban.substr(4, 4);
     else if (country === 'DE') bankCode = iban.substr(4, 8);
     else if (country === 'ES') bankCode = iban.substr(4, 4);
     else if (country === 'FR') bankCode = iban.substr(4, 5);

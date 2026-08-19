@@ -2,7 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/sigalor/iban-to-bic)](https://github.com/sigalor/iban-to-bic/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/iban-to-bic)](https://www.npmjs.com/package/iban-to-bic) [![Unit tests workflow status](https://github.com/sigalor/iban-to-bic/actions/workflows/tests.yaml/badge.svg)](https://github.com/sigalor/iban-to-bic/actions/workflows/tests.yaml)
 
-Determines the SWIFT BIC of an IBAN. Currently supports IBANs from the following countries: Austria, Belgium, Germany, Luxembourg, Netherlands, Spain, France.
+Determines the SWIFT BIC of an IBAN. Currently supports IBANs from the following countries: Austria, Belgium, Czech Republic, France, Germany, Luxembourg, Netherlands, Spain, Switzerland.
 
 ## Usage
 
@@ -24,6 +24,8 @@ npm run generate
 ```
 
 For Spain and France, data directly from the European Central Bank is used, see [here](https://www.ecb.europa.eu/stats/financial_corporations/list_of_financial_institutions/html/monthly_list-MID.en.html).
+
+See [docs/data-sources.md](docs/data-sources.md) for the source behind every supported country, and for research notes on the countries that are not supported yet.
 
 ### programmatically update the dataset
 
