@@ -3,6 +3,9 @@
 - added datasets for Switzerland (incl. Liechtenstein-domiciled institutions) and the Czech Republic
 - added `docs/data-sources.md` documenting the source per country and research notes on unsupported countries
 - fixed the Netherlands generator, which broke when the source worksheet and its header row were renamed and moved
+- `generate()` no longer rejects when a single source breaks: every generator that succeeds is still written and
+  reloaded, and failures are reported instead. **Breaking**: the return value changed from `undefined` to
+  `{ succeeded, failed }`, and a broken source no longer throws.
 
 # 1.5.0 (2025-04-11)
 

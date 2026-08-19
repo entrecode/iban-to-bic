@@ -34,8 +34,16 @@ You can also update the dataset at runtime whenever you want (e.g. at start-up):
 ```
 const { ibanToBic, generate } = require('iban-to-bic');
 
-await generate();
+const { succeeded, failed } = await generate();
+```
 
+`generate` does not reject when a single source is unavailable or has changed its format. Every generator that succeeded is written and reloaded, the ones that did not are returned in `failed` as `{ name, reason }` and logged via `console.warn`. Check `failed` if you want to know about it:
+
+```
+const { failed } = await generate();
+for (const { name, reason } of failed) {
+  logger.error(`could not update IBAN/BIC data for ${name}`, reason);
+}
 ```
 
 

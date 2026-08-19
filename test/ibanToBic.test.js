@@ -52,6 +52,8 @@ test('returns undefined for an invalid IBAN', () => {
   expect(ibanToBic('not an IBAN')).toBe(undefined);
 });
 
-test('generate new Data', () => {
-  return generate();
+test('generate new Data', async () => {
+  // generate() no longer throws when a single source breaks, so assert on the reported failures
+  const { failed } = await generate();
+  expect(failed.map(({ name }) => name)).toEqual([]);
 });
