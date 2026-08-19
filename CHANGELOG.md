@@ -1,4 +1,4 @@
-# 1.6.0
+# 1.6.0 (2026-08-19)
 
 - added datasets for Switzerland (incl. Liechtenstein-domiciled institutions) and the Czech Republic
 - added `docs/data-sources.md` documenting the source per country and research notes on unsupported countries
