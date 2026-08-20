@@ -67,17 +67,22 @@ The `Systém CERTIS` column (`A` = direct participant of the Czech clearing syst
     https://www.lb.lt/uploads/documents/files/FIK_KODAI_<YYYYMMDD>-en.csv
 
 The list "Lithuanian bank codes for IBAN-BIC and BIC+" maps the 5-digit national ID (= pos. 5–9
-of the IBAN) to the BIC, e.g. `32500` → `REVOLT21` (Revolut Bank UAB). 229 data rows, all
-national IDs unique, 138 distinct BICs. E-money institutions are included, unlike in the ECB
-list. LT matters more than its size suggests: Revolut issues Lithuanian IBANs, so this is not
-an edge case but every customer with a Revolut account.
+of the IBAN) to the BIC, e.g. `32500` → `REVOLT21` (Revolut Bank UAB). 230 data rows, all
+national IDs unique. E-money institutions are included, unlike in the ECB list. LT matters more
+than its size suggests: Revolut issues Lithuanian IBANs, so this is not an edge case but every
+customer with a Revolut account.
 
 Until late 2025 the list was a PDF (`LT-<date>-en.pdf`, last version `LT-20251118-en.pdf`);
-since then it is a CSV. Known versions: `FIK_KODAI_20251121-en.csv` and
-`FIK_KODAI_20260505-en.csv` (current as of 2026-08-19; verified by sweeping every date from
-2025-11-01 — those two are the only hits).
+since then it is a CSV. Known versions: `FIK_KODAI_20251121-en.csv`, `FIK_KODAI_20260505-en.csv`
+and `FIK_KODAI_20260708-en.csv` (current as of 2026-08-20, 230 rows).
 
-Format details, verified against both versions:
+`20260708` is worth a note: a full sweep on 2026-08-19 back to 2025-11-01 reported `20260505` as
+the newest file and did not find `20260708`, which then answered 200 a day later. Either the
+file is published under a backdated name some weeks after its nominal date, or that sweep hit
+one of the transient non-answers described below and produced a false negative. Both readings
+argue for the same thing — never treat an unclear response as "not published".
+
+Format details, verified against all three CSV versions:
 
 - Header: `National ID;BIC Code;Financial Institution Name;Branch Name;Legal Entity Code;City;Branch Address;Zip Code;Location;Country`
   followed by five empty trailing columns (`;;;;;` on every line, header included).
@@ -99,14 +104,22 @@ construction the newest version. The walk is bounded by `lastKnownDate`, the new
 known when the generator was last touched — bump it occasionally, the probe count is "days
 since `lastKnownDate`" and grows by one request per day until someone does.
 
-The probing itself is not blocked: ~400 HEAD requests against `/uploads/documents/files/` in
-one afternoon (6 in parallel) drew no 403, no 429 and no challenge, and hits are even served
-from Cloudflare's cache (`cf-cache-status: HIT`). Two traps for the prober, both verified:
+Probing `/uploads/documents/files/` is not challenged, but it **is** rate limited, and that is
+the sharp edge of this approach. Three traps for the prober, all verified:
 
-- A **miss is not a 404** — it is a `302` redirect to `http://www.lb.lt/`. The prober must not
-  follow redirects (`redirect: 'manual'`); with fetch's default redirect-following, a miss
-  comes back as HTTP 200 with the homepage HTML — and the homepage is behind the Cloudflare
-  challenge, so it may also surface as an unexpected 403.
+- **Transient failures must not count as "not published".** Sweeping ~100 dates with 6 parallel
+  requests produced a mixed bag: mostly 404, but also one `429`, one `520` and three `302`.
+  Probed sequentially, the same URLs answer perfectly consistently (8/8 `200` for a file that
+  exists, 8/8 `404` for one that does not), so the noise is self-inflicted by concurrency.
+  Since the walk stops at the first hit, a transient non-answer on a *newer* date would silently
+  pin the dataset to an older version — the worst failure mode here, because it looks like
+  success. `lib/lt.js` therefore probes with concurrency 3, retries anything that is not a clear
+  hit-or-miss, and throws rather than falling back to older data if a date stays unresolved.
+- **A miss has two spellings.** On 2026-08-19 every miss was a `302` to `http://www.lb.lt/`; on
+  2026-08-20 misses were plain `404`s. Both are treated as "not published". The prober must not
+  follow redirects (`redirect: 'manual'`): with fetch's default redirect-following a miss comes
+  back as HTTP 200 with the homepage HTML, and since the homepage is behind the challenge it may
+  also surface as an unexpected 403.
 - **Node's TLS fingerprint matters.** `lib/generate.js` used to shuffle `tls.DEFAULT_CIPHERS`
   (added 2025-04 for data-loading problems with a source that was not recorded). With a
   shuffled cipher order Cloudflare answers the GET on the CSV with 403 — reproducibly, while
