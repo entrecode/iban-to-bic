@@ -25,6 +25,11 @@ test('determines the correct BIC for a German IBAN', () => {
   expect(ibanToBic('DE51500105179975341634')).toBe('INGDDEFFXXX');
 });
 
+test('determines the correct BIC for a Lithuanian IBAN', () => {
+  // bank code 32500 is Revolut Bank UAB
+  expect(ibanToBic('LT353250012345678901')).toBe('REVOLT21');
+});
+
 test('determines the correct BIC for a Luxembourgish IBAN', () => {
   expect(ibanToBic('LU280019400644750000')).toBe('BCEELULL');
 });
@@ -52,8 +57,13 @@ test('returns undefined for an invalid IBAN', () => {
   expect(ibanToBic('not an IBAN')).toBe(undefined);
 });
 
-test('generate new Data', async () => {
-  // generate() no longer throws when a single source breaks, so assert on the reported failures
-  const { failed } = await generate();
-  expect(failed.map(({ name }) => name)).toEqual([]);
-});
+test(
+  'generate new Data',
+  async () => {
+    // generate() no longer throws when a single source breaks, so assert on the reported failures
+    const { failed } = await generate();
+    expect(failed.map(({ name }) => name)).toEqual([]);
+  },
+  // downloads from every source; LT alone probes one dated URL per day since its last release
+  60000,
+);

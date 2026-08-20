@@ -16,6 +16,7 @@ Everything below was checked with actual requests. Where a claim is _not_ verifi
 | DE      | pos. 5–12 (8)     | Bundesbank                                  | XLSX   |
 | ES      | RIAD code         | ECB, monthly list of financial institutions | TSV    |
 | FR      | pos. 5–9 (5)      | ECB, monthly list of financial institutions | TSV    |
+| LT      | pos. 5–9 (5)      | Bank of Lithuania                           | CSV    |
 | LU      | pos. 5–7 (3)      | ABBL                                        | XLSX   |
 | NL      | pos. 5–8 (4)      | Betaalvereniging Nederland                  | XLSX   |
 
@@ -61,26 +62,60 @@ The `Systém CERTIS` column (`A` = direct participant of the Czech clearing syst
 `certis` in `datasets-extended/cz.json`. Note there is a _versioned_ mirror of the same file
 (`kody_bank_CR_253.csv`) — do not use it, it goes stale.
 
-## Researched, not implemented
-
 ### LT — Bank of Lithuania
 
-Good data, awkward delivery. The list "Lithuanian bank codes for IBAN-BIC and BIC+" maps the
-5-digit national ID (= pos. 5–9 of the IBAN) to the BIC, e.g. `32500` → `REVOLT21`
-(Revolut Bank UAB). Columns: National ID, BIC Code, Financial Institution Name, Branch Name,
-City, Branch Address, Zip Code, Location, Country.
+    https://www.lb.lt/uploads/documents/files/FIK_KODAI_<YYYYMMDD>-en.csv
 
-Two obstacles:
+The list "Lithuanian bank codes for IBAN-BIC and BIC+" maps the 5-digit national ID (= pos. 5–9
+of the IBAN) to the BIC, e.g. `32500` → `REVOLT21` (Revolut Bank UAB). 229 data rows, all
+national IDs unique, 138 distinct BICs. E-money institutions are included, unlike in the ECB
+list. LT matters more than its size suggests: Revolut issues Lithuanian IBANs, so this is not
+an edge case but every customer with a Revolut account.
 
-- It is a **PDF**, so it needs a parser this repo does not have yet (only XLSX/CSV/HTML).
-- The filename is **dated** (`LT-20251118-en.pdf`) and the index page that lists the current one
-  (`https://www.lb.lt/en/iban-and-financial-institution-codes`) is behind a Cloudflare
-  challenge — HTTP 403 for curl and fetch, including with a browser user agent. The
-  `/uploads/documents/files/` path itself is _not_ challenged and serves the PDF with HTTP 200.
-  So the file is reachable but the current filename cannot be discovered automatically.
+Until late 2025 the list was a PDF (`LT-<date>-en.pdf`, last version `LT-20251118-en.pdf`);
+since then it is a CSV. Known versions: `FIK_KODAI_20251121-en.csv` and
+`FIK_KODAI_20260505-en.csv` (current as of 2026-08-19; verified by sweeping every date from
+2025-11-01 — those two are the only hits).
 
-LT matters more than its size suggests: Revolut issues Lithuanian IBANs, so this is not an
-edge case but every customer with a Revolut account.
+Format details, verified against both versions:
+
+- Header: `National ID;BIC Code;Financial Institution Name;Branch Name;Legal Entity Code;City;Branch Address;Zip Code;Location;Country`
+  followed by five empty trailing columns (`;;;;;` on every line, header included).
+- Semicolon-separated, CRLF, **Windows-1257** (Baltic) encoded — not UTF-8. Decoding as UTF-8
+  throws on byte `0xA0`: several `Legal Entity Code` values carry a trailing non-breaking
+  space (removed by `trim()`, which strips U+00A0), and names/addresses contain Lithuanian
+  letters (`Gynėjų`, `Kęstučio`) plus CP125x smart quotes (`„…“`).
+- One row is entirely empty (only semicolons) and must be skipped.
+
+**Discovery.** The filename is dated and the index page that links the current one
+(`https://www.lb.lt/en/iban-and-financial-institution-codes`) is behind a Cloudflare
+challenge — HTTP 403 for curl and fetch regardless of user agent, as are the sitemap, the site
+search and the Lithuanian page. The Wayback Machine has no snapshot newer than 2024-04, so it
+cannot serve as an index either. But `/uploads/documents/files/` itself is not challenged,
+**and old versions stay online** (the retired November PDF and the superseded
+`FIK_KODAI_20251121` CSV both still return HTTP 200). So `lib/lt.js` probes dates backwards
+from today (in Europe/Vilnius, the publisher's timezone) until the first HTTP 200, which is by
+construction the newest version. The walk is bounded by `lastKnownDate`, the newest version
+known when the generator was last touched — bump it occasionally, the probe count is "days
+since `lastKnownDate`" and grows by one request per day until someone does.
+
+The probing itself is not blocked: ~400 HEAD requests against `/uploads/documents/files/` in
+one afternoon (6 in parallel) drew no 403, no 429 and no challenge, and hits are even served
+from Cloudflare's cache (`cf-cache-status: HIT`). Two traps for the prober, both verified:
+
+- A **miss is not a 404** — it is a `302` redirect to `http://www.lb.lt/`. The prober must not
+  follow redirects (`redirect: 'manual'`); with fetch's default redirect-following, a miss
+  comes back as HTTP 200 with the homepage HTML — and the homepage is behind the Cloudflare
+  challenge, so it may also surface as an unexpected 403.
+- **Node's TLS fingerprint matters.** `lib/generate.js` used to shuffle `tls.DEFAULT_CIPHERS`
+  (added 2025-04 for data-loading problems with a source that was not recorded). With a
+  shuffled cipher order Cloudflare answers the GET on the CSV with 403 — reproducibly, while
+  the same request with Node's default cipher order gets 200. The shuffle was removed when LT
+  was added; all nine generators were verified twice to succeed without it. If a source starts
+  failing with the default fingerprint again, scope the workaround to that source instead of
+  changing the global default.
+
+## Researched, not implemented
 
 ### PL — NBP / EWIB
 
