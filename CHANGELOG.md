@@ -1,3 +1,12 @@
+# 1.7.0 (2026-08-20)
+
+- added a dataset for Lithuania, sourced from the Bank of Lithuania. This covers Revolut, which issues Lithuanian
+  IBANs. The current file is discovered by probing its dated filename backwards from today, because the page linking
+  it is behind a bot challenge.
+- removed the TLS cipher shuffle from the generators: with a shuffled cipher order, Cloudflare answered downloads
+  from the Bank of Lithuania with HTTP 403, while Node's default order succeeds. All generators were verified to
+  work without it.
+
 # 1.6.0 (2026-08-19)
 
 - added datasets for Switzerland (incl. Liechtenstein-domiciled institutions) and the Czech Republic
